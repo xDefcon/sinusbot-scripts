@@ -38,7 +38,7 @@ registerPlugin({
                     'no',
                     'yes'
                 ]
-            },
+            }
 
         }
     },

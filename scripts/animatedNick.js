@@ -21,7 +21,7 @@
 
 registerPlugin({
         name: 'Animated Nickname',
-        version: '1.0',
+        version: '1.1',
         description: 'This scripts kicks some fun in your bot, you can set a custom animated nickname or description.',
         author: 'Luigi M. - xDefcon (xdefconhd@gmail.com)',
         vars: {
@@ -34,10 +34,19 @@ registerPlugin({
                 ]
             },
 
+            animatedMode: {
+                title: 'Animated mode [nick/desc]',
+                type: 'select',
+                options: [
+                    'nickname',
+                    'description'
+                ]
+            },
+
             delayTime: {
-                title: 'Nick changer delay [milliseconds]',
+                title: 'Nick/Desc changer delay [milliseconds]',
                 type: 'number',
-                placeholder: 'Change nick every... (Default: 1000ms).'
+                placeholder: 'Change nick/description every... (Default: 1000ms).'
             },
 
             customNicks: {
@@ -64,7 +73,7 @@ registerPlugin({
     },
 
 
-    function(sinusbot, config) {
+    function (sinusbot, config) {
 
         var i = 0;
         var adminUUID = [];
@@ -72,6 +81,11 @@ registerPlugin({
 
         if (typeof config.enableSwitch == 'undefined') {
             config.enableSwitch = false;
+        }
+
+        if (typeof config.animatedMode == 'undefined') {
+            config.animatedMode = 0;
+            debug("No mode selected, selecting NICK mode...")
         }
 
         if (typeof config.debugSwitch == 'undefined') {
@@ -87,33 +101,34 @@ registerPlugin({
 
         if (typeof config.delayTime == 'undefined') {
             config.delayTime = 1000;
-            debug("Nick changer delay set to 1000ms.");
-        } else if (config.delayTime < 200){
+            debug("Nick/Desc changer delay set to 1000ms.");
+        } else if (config.delayTime < 200) {
             debug("To avoid lag/crashes, the delay MUST be greater than 200 milliseconds.");
             config.delayTime = 1000;
             debug("Delay set to 1 second.");
         } else {
-            debug("Nick changer delay set to " + config.delayTime + ".");
+            debug("Nick/Desc changer delay set to " + config.delayTime + ".");
         }
 
         if (typeof config.customNicks == 'undefined') {
-            debug("Nickname list empty or wrong, SCRIPT STOPPED.");
+            debug("Nickname/description list empty or wrong, SCRIPT STOPPED.");
             return;
         }
 
         setInterval(nickChange, config.delayTime);
 
-        sinusbot.on('chat', function(ev) {
+        sinusbot.on('chat', function (ev) {
             var message = ev.msg;
-            if(adminUUID.indexOf(ev.clientUid) >= 0){
-                switch(message) {
+            if (adminUUID.indexOf(ev.clientUid) >= 0) {
+                switch (message) {
                     case '!animated on':
                         config.enableSwitch = 1;
                         break;
 
                     case '!animated off':
                         config.enableSwitch = 0;
-                        sinusbot.setNick(initialNick);
+                        if (config.animatedMode == 0) sinusbot.setNick(initialNick);
+                        else if (config.animatedMode) sinusbot.setDescription(" ");
                         break;
                 }
             }
@@ -129,14 +144,16 @@ registerPlugin({
             if (!config.enableSwitch) return;
 
             var nickArr = config.customNicks.split(',');
-            debug("Found " + nickArr.length + "nicknames.");
+            debug("Found " + nickArr.length + "nickname(s)/description(s).");
 
-            if (i >= nickArr.length){
+            if (i >= nickArr.length) {
                 i = 1;
-                sinusbot.setNick(nickArr[0]);
+                if (config.animatedMode == 0) sinusbot.setNick(nickArr[0]);
+                else if (config.animatedMode) sinusbot.setDescription(nickArr[0]);
                 debug("Resetted counter.");
             } else {
-                sinusbot.setNick(nickArr[i]);
+                if (config.animatedMode == 0) sinusbot.setNick(nickArr[i]);
+                else if (config.animatedMode) sinusbot.setDescription(nickArr[i]);
                 i++;
             }
         }

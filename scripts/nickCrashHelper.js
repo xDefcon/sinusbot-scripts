@@ -78,12 +78,12 @@ registerPlugin({
             nick = nick.substring(0, length - j);
 
             if (j != 0) {
-                sinusbot.setNick(nick);
                 debug("Nick set to " + nick + " (found " + j + " crash-numbers after the nick.)");
             } else {
                 debug("Nick not modified, all seems normal :)");
             }
-
+            
+            sinusbot.setNick(nick);
         }
 
     });

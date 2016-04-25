@@ -21,7 +21,7 @@
 
 registerPlugin({
         name: 'Nick Crash Helper',
-        version: '1.1',
+        version: '1.2',
         description: 'This script removes the awful "1" after the nickname (This can happen when the bot crashes).',
         author: 'Luigi M. - xDefcon (xdefconhd@gmail.com)',
         vars: {

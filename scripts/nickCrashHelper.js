@@ -65,25 +65,10 @@ registerPlugin({
 
 
         function nickCheck() {
-            var i = 1,
-                j = 0,
-                nick = sinusbot.getNick(),
-                length = nick.length;
-
-            while (nick.charAt(length - i) == '1') {
-                i++;
-                j++;
+            if (sinusbot.getNick() != sinusbot.getActualNick()) { // 0.9.12.2-58b509d or higher needed
+                debug("Nick changed from " + sinusbot.getActualNick() + " to " + sinusbot.getNick());
+                sinusbot.setNick(sinusbot.getNick());
             }
-
-            nick = nick.substring(0, length - j);
-
-            if (j != 0) {
-                debug("Nick set to " + nick + " (found " + j + " crash-numbers after the nick.)");
-            } else {
-                debug("Nick not modified, all seems normal :)");
-            }
-            
-            sinusbot.setNick(nick);
         }
 
     });

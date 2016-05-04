@@ -21,7 +21,7 @@
 
 registerPlugin({
         name: 'Animated Nickname',
-        version: '1.1',
+        version: '1.2',
         description: 'This scripts kicks some fun in your bot, you can set a custom animated nickname or description.',
         author: 'Luigi M. - xDefcon (xdefconhd@gmail.com)',
         vars: {
@@ -35,11 +35,12 @@ registerPlugin({
             },
 
             animatedMode: {
-                title: 'Animated mode [nick/desc]',
+                title: 'Animated mode [nick/desc/both]',
                 type: 'select',
                 options: [
                     'nickname',
-                    'description'
+                    'description',
+                    'nickname + description'
                 ]
             },
 
@@ -52,7 +53,7 @@ registerPlugin({
             customNicks: {
                 title: 'Nicknames list',
                 type: 'string',
-                placeholder: 'A comma separated list of nicks (e.g: BOT 1,BOT 2,BOT 3).'
+                placeholder: 'A comma separated list of nicks/descs (e.g: BOT 1,BOT 2,BOT 3).'
             },
 
             adminUUID: {
@@ -123,12 +124,18 @@ registerPlugin({
                 switch (message) {
                     case '!animated on':
                         config.enableSwitch = 1;
+                        debug("Enabling script by command.");
                         break;
 
                     case '!animated off':
                         config.enableSwitch = 0;
+                        debug("Disabling script by command.");
                         if (config.animatedMode == 0) sinusbot.setNick(initialNick);
-                        else if (config.animatedMode) sinusbot.setDescription(" ");
+                        else if (config.animatedMode == 1) sinusbot.setDescription(" ");
+                        else if (config.animatedMode == 2){
+                            sinusbot.setDescription(" ");
+                            sinusbot.setNick(initialNick);
+                        }
                         break;
                 }
             }
@@ -144,16 +151,24 @@ registerPlugin({
             if (!config.enableSwitch) return;
 
             var nickArr = config.customNicks.split(',');
-            debug("Found " + nickArr.length + "nickname(s)/description(s).");
+            debug("Found " + nickArr.length + " nickname(s)/description(s).");
 
             if (i >= nickArr.length) {
                 i = 1;
                 if (config.animatedMode == 0) sinusbot.setNick(nickArr[0]);
-                else if (config.animatedMode) sinusbot.setDescription(nickArr[0]);
+                else if (config.animatedMode == 1) sinusbot.setDescription(nickArr[0]);
+                else if (config.animatedMode == 2) {
+                    sinusbot.setNick(nickArr[0]);
+                    sinusbot.setDescription(nickArr[0]);
+                }
                 debug("Resetted counter.");
             } else {
                 if (config.animatedMode == 0) sinusbot.setNick(nickArr[i]);
-                else if (config.animatedMode) sinusbot.setDescription(nickArr[i]);
+                else if (config.animatedMode == 1) sinusbot.setDescription(nickArr[i]);
+                else if (config.animatedMode == 2) {
+                    sinusbot.setNick(nickArr[i]);
+                    sinusbot.setDescription(nickArr[i]);
+                }
                 i++;
             }
         }

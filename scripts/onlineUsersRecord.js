@@ -60,7 +60,7 @@ registerPlugin({
     setInterval(onlineCheck, config.delayTime * 1000);
 
     function debug(msg) {
-        if (config.debugSwitch === 1) {
+        if (config.debugSwitch == 1) {
             sinusbot.log("[DEBUG] " + msg);
         }
     }

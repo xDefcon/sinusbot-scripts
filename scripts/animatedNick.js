@@ -14,16 +14,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @author Luigi Martinelli <xdefconhd@gmail.com>
+ * @author Luigi Martinelli <luigi@xdefcon.com>
  *
  */
 
 
 registerPlugin({
     name: "Animated Nickname",
-    version: "1.4",
+    version: "1.5",
+    engine: '>= 0.9.16',
     description: "This scripts kicks some fun in your bot, you can set a custom animated nickname or description.",
-    author: "Luigi M. - xDefcon (xdefconhd@gmail.com)",
+    author: "Luigi M. - xDefcon (luigi@xdefcon.com)",
     vars: {
         enableSwitch: {
             title: "Activate the script?", type: "select", options: ["no", "yes"]
@@ -48,10 +49,12 @@ registerPlugin({
         }
     }
 }, function (sinusbot, config) {
-    var i = 0;
+    var engine = require('engine');
+    var event = require('event');
     var minimumDelay = 100;
+    var i = 0;
     var adminUUID = [];
-    var initialNick = sinusbot.getNick();
+    var initialNick = engine.getNick();
     if (typeof config.enableSwitch == "undefined") {
         config.enableSwitch = false;
     }
@@ -84,9 +87,9 @@ registerPlugin({
     }
 
     var intervalN = setInterval(nickChange, config.delayTime);
-    sinusbot.on("chat", function (ev) {
-        var message = ev.msg;
-        if (adminUUID.indexOf(ev.clientUid) >= 0) {
+    event.on("chat", function (ev) {
+        var message = ev.text;
+        if (adminUUID.indexOf(ev.client.uniqueID()) >= 0) {
             switch (message) {
                 case "!animated on":
                     config.enableSwitch = 1;
@@ -95,11 +98,11 @@ registerPlugin({
                 case "!animated off":
                     config.enableSwitch = 0;
                     debug("Disabling script by command.");
-                    if (config.animatedMode == 0) sinusbot.setNick(initialNick);
-                    if (config.animatedMode == 1) sinusbot.setDescription(" ");
+                    if (config.animatedMode == 0) engine.setNick(initialNick);
+                    if (config.animatedMode == 1) sinusbot.setDescription(" "); //no setDescription method in engine
                     if (config.animatedMode == 2) {
                         sinusbot.setDescription(" ");
-                        sinusbot.setNick(initialNick);
+                        engine.setNick(initialNick);
                     }
                     break;
                 default:
@@ -108,21 +111,21 @@ registerPlugin({
                         switch (split[2]) {
                             case "nickname":
                                 config.animatedMode = 0;
-                                sinusbot.chatPrivate(ev.clientId, "Animated mode set to: nickname.");
+                                ev.client.chat("Animated mode set to: nickname.");
                                 debug("Animated mode set to: nickname via COMMAND by: " + ev.clientUid);
                                 break;
                             case "description":
                                 config.animatedMode = 1;
-                                sinusbot.chatPrivate(ev.clientId, "Animated mode set to: description.");
+                                ev.client.chat("Animated mode set to: description.");
                                 debug("Animated mode set to: description via COMMAND by: " + ev.clientUid);
                                 break;
                             case "both":
                                 config.animatedMode = 2;
-                                sinusbot.chatPrivate(ev.clientId, "Animated mode set to: nickname + description.");
+                                ev.client.chat("Animated mode set to: nickname + description.");
                                 debug("Animated mode set to: nickname + description via COMMAND by: " + ev.clientUid);
                                 break;
                             default:
-                                sinusbot.chatPrivate(ev.clientId, "Unknown mode for '" + split[2] + "', valid ones are: 'nickname', 'description' and 'both'.");
+                                ev.client.chat("Unknown mode for '" + split[2] + "', valid ones are: 'nickname', 'description' and 'both'.");
                                 break;
                         }
                     }
@@ -130,13 +133,14 @@ registerPlugin({
                         if (!isNaN(split[2])) {
                             var msgDelay = parseInt(split[2]);
                             if (msgDelay < minimumDelay) {
-                                sinusbot.chatPrivate(ev.clientId, "To avoid lag/crashes, the delay MUST be greater than 100 milliseconds.");
+                                ev.client.chat("To avoid lag/crashes, the delay MUST be greater than 100 milliseconds.");
                             } else {
                                 config.delayTime = msgDelay;
                                 clearInterval(intervalN);
                                 intervalN = setInterval(nickChange, config.delayTime);
-                                sinusbot.chatPrivate(ev.clientId, "Delay time set to: " + msgDelay + " milliseconds.");
-                                debug("Delay time set to: " + msgDelay +" by: " + ev.clientUid);}
+                                ev.client.chat("Delay time set to: " + msgDelay + " milliseconds.");
+                                debug("Delay time set to: " + msgDelay + " by: " + ev.clientUid);
+                            }
                         }
                     }
                     break;
@@ -147,7 +151,7 @@ registerPlugin({
 
     function debug(msg) {
         if (config.debugSwitch == 1) {
-            sinusbot.log("[DEBUG] " + msg);
+            engine.log("[DEBUG] " + msg);
         }
     }
 
@@ -157,18 +161,18 @@ registerPlugin({
         debug("Found " + nickArr.length + " nickname(s)/description(s).");
         if (i >= nickArr.length) {
             i = 1;
-            if (config.animatedMode == 0) sinusbot.setNick(nickArr[0]);
+            if (config.animatedMode == 0) engine.setNick(nickArr[0]);
             if (config.animatedMode == 1) sinusbot.setDescription(nickArr[0]);
             if (config.animatedMode == 2) {
-                sinusbot.setNick(nickArr[0]);
+                engine.setNick(nickArr[0]);
                 sinusbot.setDescription(nickArr[0]);
             }
             debug("Reset counter.");
         } else {
-            if (config.animatedMode == 0) sinusbot.setNick(nickArr[i]);
+            if (config.animatedMode == 0) engine.setNick(nickArr[i]);
             if (config.animatedMode == 1) sinusbot.setDescription(nickArr[i]);
             if (config.animatedMode == 2) {
-                sinusbot.setNick(nickArr[i]);
+                engine.setNick(nickArr[i]);
                 sinusbot.setDescription(nickArr[i]);
             }
             i++;

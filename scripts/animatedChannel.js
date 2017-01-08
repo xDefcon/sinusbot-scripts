@@ -44,7 +44,7 @@ registerPlugin({
             type: "string",
             placeholder: "A comma separated list of channel names (e.g: CHANNEL 1, CHANNEL 2, CHANNEL 3)."
         }, customDescs: {
-            title: "Descs list",
+            title: "Channel descriptions list",
             type: "string",
             placeholder: "A comma separated list of channel descriptions (e.g: [IMG]link[/IMG],[IMG]link2[/IMG],text3)."
         }, adminUUID: {

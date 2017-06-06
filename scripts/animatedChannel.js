@@ -137,7 +137,7 @@ registerPlugin({
                                 break;
                         }
                     }
-                    if (split[0] + " " + split[1] == "!animatedchan delay") {
+                    else if (split[0] + " " + split[1] == "!animatedchan delay") {
                         if (!isNaN(split[2])) {
                             var msgDelay = parseInt(split[2]);
                             if (msgDelay < minimumDelay) {

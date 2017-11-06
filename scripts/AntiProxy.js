@@ -44,7 +44,7 @@ registerPlugin({
         }, punishmentMessage: {
             title: "Punishment message (kick, poke, ban)",
             type: 'string',
-            placeholder: "Proxy/VPN detected. Please ensure to connect without proxies or VPNs. If you think this is an error contact: luigi@xdefcon.com"
+            placeholder: "Proxy/VPN detected. Error? Contact: luigi@xdefcon.com or admin"
         }, notifyOnDetection: {
             title: 'Notify Admins when a proxy is detected?',
             type: 'select',
@@ -83,14 +83,23 @@ registerPlugin({
     if (typeof config.punishment == 'undefined') {
         config.punishment = 1;
     }
-    if (typeof config.punishmentMessage == 'undefined') {
-        config.punishmentMessage = "Proxy/VPN detected. Please ensure to connect without proxies or VPNs. If you think this is an error contact: luigi@xdefcon.com";
+    if (typeof config.punishmentMessage == 'undefined' || config.punishmentMessage == "") {
+        config.punishmentMessage = "Proxy/VPN detected. Error? Contact: luigi@xdefcon.com or admin";
     }
     if (typeof config.notifyOnDetection == 'undefined') {
         config.notifyOnDetection = 1;
     }
     if (typeof config.permissionsMessage == 'undefined') {
         config.permissionsMessage = "You don't have enough permissions to execute this command.";
+    }
+    if (config.punishment == 2 && typeof config.tempBanDuration == 'undefined') {
+        config.tempBanDuration = 10;
+    }
+    if (typeof config.adminGroups == 'undefined') {
+        config.adminGroups = [];
+    }
+    if (typeof config.admins == 'undefined') {
+        config.admins = [];
     }
 
     var event = require("event");
@@ -245,10 +254,10 @@ registerPlugin({
     function checkForProxy(client) {
         var ip = client.getIPAddress();
         var res = checkProxyViaAPI(ip, client);
-        if (res) {
+        if (res === true) {
             debug("[PROXY DETECTED] Client: " + client.name() + " (" + client.uniqueID() + ") IP: " + ip);
             handleDetection(client);
-        } else if (!res) {
+        } else if (res === false) {
             debug("Passing proxy check for Client: " + client.name() + " - IP: " + ip);
         } else {
             debug("Waiting API response for Client: " + client.name() + " - IP: " + ip);
@@ -317,7 +326,7 @@ registerPlugin({
         if (config.notifyOnDetection == 1) {
             sendMessageToStaff("[b][AntiProxy][/b] Detected Proxy on client: " + client.name() + "(" + client.uniqueID() + ") IP: " + client.getIPAddress());
         }
-
+        debug("Punishment message: " + config.punishmentMessage);
         if (config.punishment == 0) {
             client.poke(config.punishmentMessage);
             debug("Sent poke to Client: " + client.name());
@@ -327,7 +336,7 @@ registerPlugin({
             debug("Kicked Client: " + client.name());
         }
         if (config.punishment == 2) {
-            client.ban(config.tempBanDuration, config.punishmentMessage);
+            client.ban(config.tempBanDuration, config.punishmentMessage.substring(0, 70));
             debug("Tempbanned Client: " + client.name() + " for " + config.tempBanDuration + " seconds.");
         }
     }

@@ -21,7 +21,7 @@
 
 registerPlugin({
     name: 'AntiProxy - VPN/Proxy Blocker',
-    version: '1.0beta',
+    version: '1.1',
     description: 'With this script trolls and spammers will become the last problem for your TeamSpeak server, you ban them, they use a VPN or a proxy to reconnect and they can not!',
     author: 'Luigi M. -  xDefcon (luigi@xdefcon.com)',
     vars: {
@@ -71,6 +71,15 @@ registerPlugin({
                 title: 'Admin Group ID',
                 type: 'number'
             }]
+        }, whitelist: {
+            title: "Whitelist of IP addresses (Please report to lugi@xdefcon.com if false detection, this is a quick fix.)",
+            type: "array",
+            vars: [{
+                name: "address",
+                indent: 1,
+                title: "Client IP address to whitelist",
+                type: "string"
+            }]
         }
     }
 }, function (sinusbot, config) {
@@ -100,6 +109,9 @@ registerPlugin({
     }
     if (typeof config.admins == 'undefined') {
         config.admins = [];
+    }
+    if (typeof config.whitelist == 'undefined') {
+        config.whitelist = [];
     }
 
     var event = require("event");
@@ -268,6 +280,23 @@ registerPlugin({
     function checkProxyViaAPI(ip, client) {
         ++checkedIps;
 
+        var WhitelistException = {};
+        try {
+            config.whitelist.forEach(function (val) {
+                if (typeof val.address != "undefined") {
+                    if ("" + ip == val.address) {
+                        debug("[WHITELIST] Detected IP in whitelist. Skipping check for: " + ip);
+                        throw WhitelistException;
+                        return false;
+                    }
+                }
+            });
+        } catch (e) {
+            if (e == WhitelistException) {
+                return false;
+            }
+        }
+
         if (localProxies[ip] != null && localProxies[ip]) {
             debug("[CACHE] The IP is present in local cache and resulted in a Proxy.");
             return true;
@@ -310,6 +339,7 @@ registerPlugin({
                         "[b][url=mailto:lugi@xdefcon.com?subject=Proxy%20API%20rate%20limit]luigi@xdefcon.com[/url][/b] - " +
                         "The script [b]will continue working with the local cache[/b], no issues about it.");
                 }
+                return false;
             }
             debug("Error in the API response. Is the API offline? Using cached data. URL: " + httpOp.url);
             return false;

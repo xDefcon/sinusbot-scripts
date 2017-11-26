@@ -21,7 +21,7 @@
 
 registerPlugin({
     name: 'AntiProxy - VPN/Proxy Blocker',
-    version: '1.1',
+    version: '1.2',
     description: 'With this script trolls and spammers will become the last problem for your TeamSpeak server, you ban them, they use a VPN or a proxy to reconnect and they can not!',
     author: 'Luigi M. -  xDefcon (luigi@xdefcon.com)',
     vars: {
@@ -36,7 +36,7 @@ registerPlugin({
         }, punishment: {
             title: 'Punishment when a proxy is detected',
             type: 'select',
-            options: ['poke', 'kick', 'tempban']
+            options: ['poke', 'kick', 'tempban', 'chatmessage', 'none (notify admins only)']
         }, tempBanDuration: {
             title: "Temp ban duration in seconds",
             type: 'number',
@@ -198,8 +198,9 @@ registerPlugin({
                     client.chat(config.permissionsMessage);
                     return;
                 }
-                checkAllClients();
                 client.chat("Checking all clients now connected to the TeamSpeak server.");
+                checkAllClients();
+                client.chat("All clients checked.");
                 break;
         }
     });
@@ -354,7 +355,9 @@ registerPlugin({
         lastDetection.ip = client.getIPAddress();
 
         if (config.notifyOnDetection == 1) {
-            sendMessageToStaff("[b][AntiProxy][/b] Detected Proxy on client: " + client.name() + "(" + client.uniqueID() + ") IP: " + client.getIPAddress());
+            sendMessageToStaff("[b][AntiProxy][/b] Detected Proxy on client: [URL=client://" + client.id() +"/" +
+                client.uniqueID() + "~" + client.name() + "]" + client.name() + "[/URL] (" + client.uniqueID() + ") IP: " + client.getIPAddress() +
+                "\n Total client connections: " + client.getTotalConnections() + " - First connection at: " + getDateString(client.getCreationTime()));
         }
         debug("Punishment message: " + config.punishmentMessage);
         if (config.punishment == 0) {
@@ -369,6 +372,13 @@ registerPlugin({
             client.ban(config.tempBanDuration, config.punishmentMessage.substring(0, 70));
             debug("Tempbanned Client: " + client.name() + " for " + config.tempBanDuration + " seconds.");
         }
+        if (config.punishment == 3) {
+            client.chat(config.punishmentMessage);
+            debug("Sent chat message to Client: " + client.name());
+        }
+        if (config.punishment == 4) {
+            debug("Notify admins only for Client: " + client.name());
+        }
     }
 
 
@@ -376,5 +386,21 @@ registerPlugin({
         if (config.debugSwitch == 1) {
             engine.log("[DEBUG] " + msg);
         }
+    }
+
+
+    function getDateString(timestamp){
+        var a = new Date(timestamp);
+        var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        var year = a.getFullYear();
+        var month = months[a.getMonth()];
+        var date = a.getDate();
+        var hour = a.getHours();
+        if (hour <= 9) hour = "0" + hour;
+        var min = a.getMinutes();
+        if (min <= 9) min = "0" + min;
+        var sec = a.getSeconds();
+        if (sec <= 9) sec = "0" + sec;
+        return date + ' ' + month + ' ' + year + ' ' + hour + ':' + min + ':' + sec ;
     }
 });

@@ -202,6 +202,17 @@ registerPlugin({
                 checkAllClients();
                 client.chat("All clients checked.");
                 break;
+            case "!antiproxy help":
+                if (!checkPermissions(client)) {
+                    client.chat(config.permissionsMessage);
+                    return;
+                }
+                client.chat("\n" + config.prefix + " [b]AntiProxy Commands[/b]\n" +
+                    config.prefix + " [b]!antiproxy info[/b]: Collects some information about the script.\n" +
+                    config.prefix + " [b]!antiproxy enable[/b]: Enables the anti proxy system.\n" +
+                    config.prefix + " [b]!antiproxy disable[/b]: Disables the anti proxy system.\n" +
+                    config.prefix + " [b]!antiproxy checkall[/b]: Executes a check on all online clients. (Could consume API requests rapidly if not cached)");
+                break;
         }
     });
 

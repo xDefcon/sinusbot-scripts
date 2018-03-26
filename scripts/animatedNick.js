@@ -21,7 +21,7 @@
 
 registerPlugin({
     name: "Animated Nickname",
-    version: "1.5",
+    version: "1.6",
     engine: '>= 0.9.16',
     description: "This scripts kicks some fun in your bot, you can set a custom animated nickname or description.",
     author: "Luigi M. - xDefcon (luigi@xdefcon.com)",
@@ -50,6 +50,7 @@ registerPlugin({
     }
 }, function (sinusbot, config) {
     var engine = require('engine');
+    var backend = require('backend');
     var event = require('event');
     var minimumDelay = 100;
     var i = 0;
@@ -99,9 +100,9 @@ registerPlugin({
                     config.enableSwitch = 0;
                     debug("Disabling script by command.");
                     if (config.animatedMode == 0) engine.setNick(initialNick);
-                    if (config.animatedMode == 1) sinusbot.setDescription(" "); //no setDescription method in engine
+                    if (config.animatedMode == 1) backend.getBotClient().setDescription(" "); //no setDescription method in engine
                     if (config.animatedMode == 2) {
-                        sinusbot.setDescription(" ");
+                        backend.getBotClient().setDescription(" ");
                         engine.setNick(initialNick);
                     }
                     break;
@@ -162,18 +163,18 @@ registerPlugin({
         if (i >= nickArr.length) {
             i = 1;
             if (config.animatedMode == 0) engine.setNick(nickArr[0]);
-            if (config.animatedMode == 1) sinusbot.setDescription(nickArr[0]);
+            if (config.animatedMode == 1) backend.getBotClient().setDescription(nickArr[0]);
             if (config.animatedMode == 2) {
                 engine.setNick(nickArr[0]);
-                sinusbot.setDescription(nickArr[0]);
+                backend.getBotClient().setDescription(nickArr[0]);
             }
             debug("Reset counter.");
         } else {
             if (config.animatedMode == 0) engine.setNick(nickArr[i]);
-            if (config.animatedMode == 1) sinusbot.setDescription(nickArr[i]);
+            if (config.animatedMode == 1) backend.getBotClient().setDescription(nickArr[i]);
             if (config.animatedMode == 2) {
                 engine.setNick(nickArr[i]);
-                sinusbot.setDescription(nickArr[i]);
+                backend.getBotClient().setDescription(nickArr[i]);
             }
             i++;
         }

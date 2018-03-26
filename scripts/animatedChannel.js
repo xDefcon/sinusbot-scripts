@@ -21,7 +21,7 @@
 
 registerPlugin({
     name: 'Animated Channel',
-    version: '2.0',
+    version: '2.0beta',
     description: 'This scripts allows you to have a custom animated channel name/description, ',
     author: 'Luigi M. - xDefcon (luigi@xdefcon.com)',
     vars: {

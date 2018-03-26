@@ -21,7 +21,7 @@
 
 registerPlugin({
     name: 'Animated Channel',
-    version: '1.0',
+    version: '2.0',
     description: 'This scripts allows you to have a custom animated channel name/description, ',
     author: 'Luigi M. - xDefcon (luigi@xdefcon.com)',
     vars: {
@@ -35,18 +35,26 @@ registerPlugin({
             title: "Name/Desc changer delay [milliseconds]",
             type: "number",
             placeholder: "Change name/description every... (Default: 1000ms)."
-        }, animatedChannel: {
-            title: "Channel that will be AnImAtEd!",
-            type: "channel",
-            placeholder: "Select a channel where you want to kick some fun in :)"
-        }, customNames: {
-            title: "Channel names list",
-            type: "string",
-            placeholder: "A comma separated list of channel names (e.g: CHANNEL 1, CHANNEL 2, CHANNEL 3)."
-        }, customDescs: {
-            title: "Channel descriptions list",
-            type: "string",
-            placeholder: "A comma separated list of channel descriptions (e.g: [IMG]link[/IMG],[IMG]link2[/IMG],text3)."
+        }, animatedChannels: {
+            title: "Channels that will be AnImAtEd!",
+            type: "array",
+            vars: [{
+                name: 'channel',
+                indent: 1,
+                title: 'Channel to be animated',
+                type: 'channel'
+            }, {
+                name: 'names',
+                indent: 1,
+                title: 'A comma separated list of channel names (e.g: CHANNEL 1, CHANNEL 2, CHANNEL 3).',
+                type: 'string'
+            }, {
+                name: 'descs',
+                indent: 1,
+                title: 'A comma separated list of channel descriptions (e.g: [IMG]link[/IMG],[IMG]link2[/IMG],text3).',
+                type: 'string'
+            }],
+            placeholder: "Select the channels where you want to kick some fun in :)"
         }, adminUUID: {
             title: "Command admin UUIDs",
             type: "string",
@@ -59,7 +67,8 @@ registerPlugin({
     var engine = require("engine");
     var event = require("event");
     var backend = require("backend");
-    var minimumDelay = 100, i = 0, j = 0, chanObj = backend.getChannelByID(config.animatedChannel), initialChanName = chanObj.name();
+    var minimumDelay = 100, i = 0, j = 0, chanObj = backend.getChannelByID(config.animatedChannel),
+        initialChanName = chanObj.name();
 
     var adminUUID = [];
 

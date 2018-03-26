@@ -67,10 +67,14 @@ registerPlugin({
     var engine = require("engine");
     var event = require("event");
     var backend = require("backend");
-    var minimumDelay = 100, i = 0, j = 0, chanObj = backend.getChannelByID(config.animatedChannel),
-        initialChanName = chanObj.name();
-
+    var minimumDelay = 100, i = 0, j = 0;
     var adminUUID = [];
+    var chanObj = [];
+    var initialChanName = [];
+    for (var k = 0; k < config.animatedChannels.length; k++) {
+        chanObj[k] = backend.getChannelByID(config.animatedChannels[k].channel);
+        initialChanName[k] = chanObj[k].name();
+    }
 
     if (typeof config.enableSwitch == "undefined") {
         config.enableSwitch = false;
@@ -98,7 +102,7 @@ registerPlugin({
     } else {
         debug("Name/Desc changer delay set to " + config.delayTime + ".");
     }
-    if (typeof config.customNames == config.customDescs == "undefined") {
+    if (typeof config.animatedChannels == "undefined") {
         debug("[WARN] In order to run the script, please fill channel names or channel descriptions list. SCRIPT STOPPED.");
         return;
     }
@@ -115,11 +119,21 @@ registerPlugin({
                 case "!animatedchan off":
                     config.enableSwitch = 0;
                     debug("Disabling script by command.");
-                    if (config.animatedMode == 0) chanObj.setName(initialChanName);
-                    if (config.animatedMode == 1) chanObj.setDescription(" ");
+                    if (config.animatedMode == 0) {
+                        for (var k = 0; k < config.animatedChannels.length; k++) {
+                            chanObj[k].setName(initialChanName[k]);
+                        }
+                    }
+                    if (config.animatedMode == 1) {
+                        for (var l = 0; l < config.animatedChannels.length; l++) {
+                            chanObj[l].setDescription(" ");
+                        }
+                    }
                     if (config.animatedMode == 2) {
-                        chanObj.setDescription(" ");
-                        chanObj.setName(initialChanName);
+                        for (var m = 0; m < config.animatedChannels.length; m++) {
+                            chanObj[m].setName(initialChanName[m]);
+                            chanObj[m].setDescription(" ");
+                        }
                     }
                     break;
                 default:
@@ -167,27 +181,30 @@ registerPlugin({
 
     function chanChange() {
         if (!config.enableSwitch) return;
-        var chanArr = {
-            names: config.customNames.split(","), descs: config.customDescs.split(",")
+        for (var c = 0; c < config.animatedChannels.length; c++) {
+            var chanArr = {
+                names: config.animatedChannels[c].names.split(","), descs: config.animatedChannels[c].descs.split(",")
+            };
+            debug("Found " + chanArr["names"].length + " channel names for channel " + chanObj[c]);
+            debug("Found " + chanArr["descs"].length + " channel descriptions for channel " + chanObj[c]);
+            if (i >= chanArr["names"].length) {
+                i = 1;
+                if (config.animatedMode != 1) chanObj[c].setName(chanArr["names"][0]);
+                debug("Reset counter.");
+            } else {
+                if (config.animatedMode != 1) chanObj[c].setName(chanArr["names"][i]);
+                i++;
+            }
+            if (j >= chanArr["descs"].length) {
+                j = 1;
+                if (config.animatedMode != 0) chanObj[c].setDescription(chanArr["descs"][0]);
+                debug("Reset counter 2.");
+            } else {
+                if (config.animatedMode != 0) chanObj[c].setDescription(chanArr["descs"][j]);
+                j++;
+            }
         }
-        debug("Found " + chanArr["names"].length + " channel names.");
-        debug("Found " + chanArr["descs"].length + " channel descriptions.");
-        if (i >= chanArr["names"].length) {
-            i = 1;
-            if (config.animatedMode != 1) chanObj.setName(chanArr["names"][0]);
-            debug("Reset counter.");
-        } else {
-            if (config.animatedMode != 1) chanObj.setName(chanArr["names"][i]);
-            i++;
-        }
-        if (j >= chanArr["descs"].length) {
-            j = 1;
-            if (config.animatedMode != 0) chanObj.setDescription(chanArr["descs"][0]);
-            debug("Reset counter 2.");
-        } else {
-            if (config.animatedMode != 0) chanObj.setDescription(chanArr["descs"][j]);
-            j++;
-        }
+
     }
 
     function debug(msg) {

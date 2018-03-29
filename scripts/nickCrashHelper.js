@@ -21,7 +21,7 @@
 
 registerPlugin({
         name: 'Nick Crash Helper',
-        version: '1.3',
+        version: '1.4',
         description: 'This script removes the awful "1" after the nickname (This can happen when the bot crashes) - Sinusbot version 0.9.12.2-58b509d or higher needed.',
         author: 'Luigi M. - xDefcon (xdefconhd@gmail.com)',
         vars: {
@@ -45,6 +45,9 @@ registerPlugin({
 
 
     function (sinusbot, config) {
+        var engine = require('engine');
+        var backend = require('backend');
+
         if (typeof config.checkTime == 'undefined') {
             config.checkTime = 60;
             debug("Check Time set to 60 seconds.");
@@ -55,18 +58,18 @@ registerPlugin({
 
         function debug(msg) {
             if (config.debugSwitch == 1) {
-                sinusbot.log("[DEBUG] " + msg);
+                engine.log("[DEBUG] " + msg);
             }
         }
 
         setInterval(nickCheck, config.checkTime * 1000);
 
         function nickCheck() {
-            var nick = sinusbot.getNick(),
-                realNick = sinusbot.getActualNick();
+            var nick = backend.getNick(),
+                realNick = backend.getBotClient().nick();
             if (nick != realNick) {
-                sinusbot.setNick(nick);
-                debug("Nick changed from " + realNick + " to " + nick);
+                engine.setNick(nick);
+                debug("Nick changed from '" + realNick + "' to '" + nick + "'");
             } else {
                 debug("Nick not modified, all seems normal.");
             }

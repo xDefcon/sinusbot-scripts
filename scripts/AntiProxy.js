@@ -41,6 +41,20 @@ registerPlugin({
             title: "Temp ban duration in seconds",
             type: 'number',
             conditions: [{field: 'punishment', value: 2}]
+        }, delayedPunishment: { //todo default setting
+            title: "Should the above punishent be delayed? (The user have X seconds to contact an admin to explain " +
+            "why he is using a Proxy?",
+            type: 'select',
+            options: ['no', 'yes']
+        }, delayedPunishmentTime: { //todo default setting
+            title: "How many seconds has the detected user to contact a staffer explaining why he is using a proxy?",
+            type: 'number',
+            conditions: [{field: 'delayedPunishment', value: 2}]
+        }, delayedPunishmentMessage: { //todo default setting
+            title: "Poke message that will be sent after detection",
+            type: 'string',
+            placeholder: "Proxy detected, you have {time} seconds to contact a staffer to receive help.",
+            conditions: [{field: 'delayedPunishment', value: 2}]
         }, punishmentMessage: {
             title: "Punishment message (kick, poke, ban)",
             type: 'string',
@@ -53,6 +67,18 @@ registerPlugin({
             title: "Not enough permissions message",
             type: 'string',
             placeholder: "You don't have enough permissions to execute this command."
+        }, apiKey: { //todo default setting
+            title: "API Key (unlimited proxy checks/hour)",
+            type: 'string',
+            placeholder: "Insert the API key provided by the developer here. If you don't have, leave blank."
+        }, antiBypass: { //todo default setting
+            title: "Enable Anti Bypass/TS3Hook? (This will detect who is trying to bypass the check with external programs)",
+            type: 'select',
+            options: ['no', 'yes']
+        }, antiBypassTime: { //todo default setting
+            title: "After how many seconds, if a client has not sent his IP address, should the script count him as a bypasser?",
+            type: 'number',
+            conditions: [{field: 'antiBypass', value: 2}]
         }, admins: {
             title: "Admin Unique IDs used to send important notifications",
             type: "array",
@@ -80,7 +106,16 @@ registerPlugin({
                 title: "Client IP address to whitelist",
                 type: "string"
             }]
-        }
+        }, whitelistGroups: { //todo add default settings
+            title: "Group IDs that are automatically whitelisted from detection",
+            type: "array",
+            vars: [{
+                name: 'groupID',
+                indent: 1,
+                title: 'Whitelisted Group ID',
+                type: 'number'
+            }]
+        },
     }
 }, function (sinusbot, config) {
     if (typeof config.enableSwitch == 'undefined') {
@@ -123,6 +158,7 @@ registerPlugin({
     var startedTime = config.enableSwitch == 1 ? Date.now() : null;
     var checkedIps = 0;
     var detectedProxies = 0;
+    var detectedBypassers = 0; //who does not send their IP address.
     var apiRequests = 0;
     var lastDetection = {
         client: null,
@@ -277,25 +313,36 @@ registerPlugin({
         }
     }
 
+    function isWhitelisted(client) {
+        var ip = client.getIPAddress();
+        var clientGroups = [];
+        var serverGroups = client.getServerGroups();
+        for (var j = 0; j < serverGroups.length; j++) {
+            clientGroups[j] = "" + serverGroups[j].id();
+        }
+        //check first for group whitelist
+        config.whitelistGroups.forEach(function (val) {
+           if (typeof val.groupId != "undefined") { //todo check double strict equals
+               if (clientGroups.indexOf("" + val.groupId) !== -1) {
+                   return true;
+               }
+           }
+        });
+        //then for ip address whitelist
+        config.whitelist.forEach(function (val) {
+            if (typeof val.address != "undefined") {
+                if ("" + ip == val.address) {
+                    return false;
+                }
+            }
+        });
+    }
 
     function checkProxyViaAPI(ip, client) {
         ++checkedIps;
-
-        var WhitelistException = {};
-        try {
-            config.whitelist.forEach(function (val) {
-                if (typeof val.address != "undefined") {
-                    if ("" + ip == val.address) {
-                        debug("[WHITELIST] Detected IP in whitelist. Skipping check for: " + ip);
-                        throw WhitelistException;
-                        return false;
-                    }
-                }
-            });
-        } catch (e) {
-            if (e == WhitelistException) {
-                return false;
-            }
+        if (isWhitelisted(client)) {
+            debug("[WHITELIST] Detected Client/IP in whitelist. Skipping check for: " + client.name() + "(" + ip + ").");
+            return false;
         }
 
         if (localProxies[ip] != null && localProxies[ip]) {
@@ -305,16 +352,19 @@ registerPlugin({
             debug("[CACHE] The IP is present in local cache and resulted in a clean address.");
             return false;
         }
-
+        var apiUrl = "https://api.xdefcon.com/proxy/check/?ip=" + ip;
+        if (typeof config.apiKey !== "undefined") {
+            apiUrl = "https://api.xdefcon.com/proxy/check/?ip=" + ip + "&key=" + config.apiKey;
+        }
         var httpOp = {
             method: "GET",
             headers: "Content-type: application/json",
             timeout: 4500,
-            url: "https://api.xdefcon.com/proxy/check/?ip=" + ip
+            url: apiUrl
         };
         sinusbot.http(httpOp, function (error, response) {
             ++apiRequests;
-            if (response.statusCode !== 200) {
+            if (response.statusCode !== 200) { //todo debug if api key not valid
                 engine.log("Could not retrieve info for " + ip + " HTTP_ERROR: " + error);
                 return false;
             }

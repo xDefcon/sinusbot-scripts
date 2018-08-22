@@ -115,7 +115,7 @@ registerPlugin({
                 title: 'Whitelisted Group ID',
                 type: 'number'
             }]
-        },
+        }
     }
 }, function (sinusbot, config) {
     if (typeof config.enableSwitch == 'undefined') {
@@ -238,6 +238,22 @@ registerPlugin({
                 checkAllClients();
                 client.chat("All clients checked.");
                 break;
+            case "!antiproxy whitelist":
+                if (!checkPermissions(client)) {
+                    client.chat(config.permissionsMessage);
+                    return;
+                }
+                var ip = message.split(" ")[2]; //todo check if message is a String obj and supports split()
+                if (!isValidIpv4Address(ip)) {
+                    client.chat("The address you entered seems not correct, please check it.");
+                    return;
+                }
+                var addressRow = {};
+                addressRow.address = [ip];
+                config.whitelist.push(addressRow); //todo check if this is the correct way
+
+                client.chat("Succesfully whitelisted the specified IP address.");
+                break;
         }
     });
 
@@ -253,6 +269,9 @@ registerPlugin({
         checkForProxy(client);
     });
 
+    function addToIpWhitelist(ip) {
+
+    }
 
     function checkPermissions(client) {
         var check = false;
@@ -290,13 +309,14 @@ registerPlugin({
 
 
     function checkAllClients() {
-        debug("Running proxy check on all clients.");
+        debug("Running proxy check on all clients (this may take a while)...");
         backend.getClients().forEach(function(client) {
             if (client.isSelf()) {
                 return;
             }
             checkForProxy(client);
         });
+        debug("Finished check.");
     }
 
 
@@ -330,7 +350,7 @@ registerPlugin({
         });
         //then for ip address whitelist
         config.whitelist.forEach(function (val) {
-            if (typeof val.address != "undefined") {
+            if (typeof val.address != "undefined") {  //todo check double strict equals
                 if ("" + ip == val.address) {
                     return false;
                 }
@@ -452,5 +472,10 @@ registerPlugin({
         var sec = a.getSeconds();
         if (sec <= 9) sec = "0" + sec;
         return date + ' ' + month + ' ' + year + ' ' + hour + ':' + min + ':' + sec ;
+    }
+
+    function isValidIpv4Address(ipaddress) {
+        return /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(ipaddress);
+
     }
 });

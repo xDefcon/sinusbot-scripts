@@ -154,6 +154,7 @@ registerPlugin({
     var backend = require("backend");
     var localProxies = {};
     var rateLimited = false;
+    var antiBypassClientConnTimes = {};
 
     var startedTime = config.enableSwitch == 1 ? Date.now() : null;
     var checkedIps = 0;
@@ -170,6 +171,29 @@ registerPlugin({
         localProxies = {};
     }, 86400000);
 
+    setInterval(function() {
+        debug("Started checking for Anti Bypass check.");
+        var clients = backend.getClients();
+        clients.forEach(function(client) {
+            var now =  new Date().getTime();
+            if (isWhitelisted(client)) {
+                debug("Client " + client.name() + " is whitelisted, skipping anti bypass check.");
+                return;
+            }
+            if (antiBypassClientConnTimes[client.uid()] == null) {
+                antiBypassClientConnTimes[client.uid()] = now;
+                return;
+            }
+            if (now - antiBypassClientConnTimes[client.uid()] >= (config.antiBypassTime * 1000) &&
+                (client.getIPAddress() == "" || client.getIPAddress() == null)) {
+                debug("[AntiBypass] Applying punishment to client: " + client.name() + " IP not retrievable.");
+                sendMessageToStaff("[b][AntiProxy] Anti Bypass[/b]: The client: " + client.uid() + "(" + client.name() +")" +
+                    " has been detected as a bypasser (The bot was not able to retrieve his IP address in the specified time.");
+                detectedBypassers++;
+                handleDetection(client);
+            }
+        });
+    }, 2000); //todo do the interval configurable?
 
     event.on("chat", function (ev) {
         var message = ev.text;
@@ -216,6 +240,7 @@ registerPlugin({
                 client.chat("\n[b]AntiProxy by xDefcon[/b]\n" +
                     "[b]Running time[/b]: " + ((Date.now() - startedTime) / 1000).toString() + "secs\n" +
                     "[b]Proxies detected[/b]: " + detectedProxies + "\n" +
+                    "[b]Bypassers detected[/b]: " + detectedBypassers + "\n" +
                     "[b]Last detection[/b]: " + lastDetection.client + " " + lastDetection.ip + "\n" +
                     "[b]Checked IPs[/b]: " + checkedIps + "\n" +
                     "[b]IP cached locally[/b]: " + Object.keys(localProxies).length + "\n" +
@@ -248,15 +273,11 @@ registerPlugin({
                     client.chat("The address you entered seems not correct, please check it.");
                     return;
                 }
-                var addressRow = {};
-                addressRow.address = [ip];
-                config.whitelist.push(addressRow); //todo check if this is the correct way
-
+                addToIpWhitelist(ip);
                 client.chat("Succesfully whitelisted the specified IP address.");
                 break;
         }
     });
-
 
     event.on("clientIPAddress", function (client) {
         if (config.enableSwitch == 0) {
@@ -270,7 +291,9 @@ registerPlugin({
     });
 
     function addToIpWhitelist(ip) {
-
+        var addressRow = {};
+        addressRow.address = [ip];
+        config.whitelist.push(addressRow); //todo check if this is the correct way
     }
 
     function checkPermissions(client) {
@@ -476,6 +499,5 @@ registerPlugin({
 
     function isValidIpv4Address(ipaddress) {
         return /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(ipaddress);
-
     }
 });

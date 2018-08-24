@@ -115,6 +115,11 @@ registerPlugin({
                 title: 'Whitelisted Group ID',
                 type: 'number'
             }]
+        }, whitelistGroupType: {
+            title: "Group Whitelist type ",
+            type: 'select',
+            options: ['normal (if client has at AT LEAST ONE of the listed groups above HE IS NOT checked)',
+                'inverted (if client has AT LEAST ONE of the listed groups above HE IS checked)']
         }
     }
 }, function (sinusbot, config) {
@@ -148,6 +153,10 @@ registerPlugin({
     if (typeof config.whitelist == 'undefined') {
         config.whitelist = [];
     }
+    if (typeof config.whitelistGroupType == 'undefined') {
+        config.whitelistGroupType = 0;
+    }
+
 
     var event = require("event");
     var engine = require("engine");
@@ -166,16 +175,16 @@ registerPlugin({
         ip: null
     };
 
-    setInterval(function() {
+    setInterval(function () {
         debug("Executing automatic purge of the local IP cache.");
         localProxies = {};
     }, 86400000);
 
-    setInterval(function() {
+    setInterval(function () {
         debug("Started checking for Anti Bypass check.");
         var clients = backend.getClients();
-        clients.forEach(function(client) {
-            var now =  new Date().getTime();
+        clients.forEach(function (client) {
+            var now = new Date().getTime();
             if (isWhitelisted(client)) {
                 debug("Client " + client.name() + " is whitelisted, skipping anti bypass check.");
                 return;
@@ -187,7 +196,7 @@ registerPlugin({
             if (now - antiBypassClientConnTimes[client.uid()] >= (config.antiBypassTime * 1000) &&
                 (client.getIPAddress() == "" || client.getIPAddress() == null)) {
                 debug("[AntiBypass] Applying punishment to client: " + client.name() + " IP not retrievable.");
-                sendMessageToStaff("[b][AntiProxy] Anti Bypass[/b]: The client: " + client.uid() + "(" + client.name() +")" +
+                sendMessageToStaff("[b][AntiProxy] Anti Bypass[/b]: The client: " + client.uid() + "(" + client.name() + ")" +
                     " has been detected as a bypasser (The bot was not able to retrieve his IP address in the specified time.");
                 detectedBypassers++;
                 handleDetection(client);
@@ -322,7 +331,7 @@ registerPlugin({
 
 
     function sendMessageToStaff(msg) {
-        backend.getClients().forEach(function(client) {
+        backend.getClients().forEach(function (client) {
             if (checkPermissions(client)) {
                 client.chat(msg);
             }
@@ -333,7 +342,7 @@ registerPlugin({
 
     function checkAllClients() {
         debug("Running proxy check on all clients (this may take a while)...");
-        backend.getClients().forEach(function(client) {
+        backend.getClients().forEach(function (client) {
             if (client.isSelf()) {
                 return;
             }
@@ -363,22 +372,28 @@ registerPlugin({
         for (var j = 0; j < serverGroups.length; j++) {
             clientGroups[j] = "" + serverGroups[j].id();
         }
+
+        var reversed = config.whitelistGroupType == 0 ? false : true;
+        var reversedFlag = false;
         //check first for group whitelist
         config.whitelistGroups.forEach(function (val) {
-           if (typeof val.groupId != "undefined") { //todo check double strict equals
-               if (clientGroups.indexOf("" + val.groupId) !== -1) {
-                   return true;
-               }
-           }
+            if (typeof val.groupId != "undefined") { //todo check double strict equals
+                if (clientGroups.indexOf("" + val.groupId) !== -1) { //if client has A group
+                    if (!reversed) {
+                        return true;
+                    }
+                }
+            }
         });
         //then for ip address whitelist
         config.whitelist.forEach(function (val) {
             if (typeof val.address != "undefined") {  //todo check double strict equals
                 if ("" + ip == val.address) {
-                    return false;
+                    return true;
                 }
             }
         });
+        return false;
     }
 
     function checkProxyViaAPI(ip, client) {
@@ -448,7 +463,7 @@ registerPlugin({
         lastDetection.ip = client.getIPAddress();
 
         if (config.notifyOnDetection == 1) {
-            sendMessageToStaff("[b][AntiProxy][/b] Detected Proxy on client: [URL=client://" + client.id() +"/" +
+            sendMessageToStaff("[b][AntiProxy][/b] Detected Proxy on client: [URL=client://" + client.id() + "/" +
                 client.uniqueID() + "~" + client.name() + "]" + client.name() + "[/URL] (" + client.uniqueID() + ") IP: " + client.getIPAddress() +
                 "\n Total client connections: " + client.getTotalConnections() + " - First connection at: " + getDateString(client.getCreationTime()));
         }
@@ -482,9 +497,9 @@ registerPlugin({
     }
 
 
-    function getDateString(timestamp){
+    function getDateString(timestamp) {
         var a = new Date(timestamp);
-        var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         var year = a.getFullYear();
         var month = months[a.getMonth()];
         var date = a.getDate();
@@ -494,7 +509,7 @@ registerPlugin({
         if (min <= 9) min = "0" + min;
         var sec = a.getSeconds();
         if (sec <= 9) sec = "0" + sec;
-        return date + ' ' + month + ' ' + year + ' ' + hour + ':' + min + ':' + sec ;
+        return date + ' ' + month + ' ' + year + ' ' + hour + ':' + min + ':' + sec;
     }
 
     function isValidIpv4Address(ipaddress) {

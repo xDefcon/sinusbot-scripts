@@ -67,10 +67,10 @@ registerPlugin({
             title: "Not enough permissions message",
             type: 'string',
             placeholder: "You don't have enough permissions to execute this command."
-        }, apiKey: { //todo default setting
-            title: "API Key (unlimited proxy checks/hour)",
+        }, apiKey: {
+            title: "API Key (gives unlimited proxy checks, contact luigi@xdefcon.com to get one)",
             type: 'string',
-            placeholder: "Insert the API key provided by the developer here. If you don't have, leave blank."
+            placeholder: "Insert the API key here. If you don't have, leave blank."
         }, antiBypass: { //todo default setting
             title: "Enable Anti Bypass/TS3Hook? (This will detect who is trying to bypass the check with external programs)",
             type: 'select',

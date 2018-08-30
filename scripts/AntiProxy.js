@@ -49,12 +49,12 @@ registerPlugin({
         }, delayedPunishmentTime: { //todo default setting
             title: "How many seconds has the detected user to contact a staffer explaining why he is using a proxy?",
             type: 'number',
-            conditions: [{field: 'delayedPunishment', value: 2}]
+            conditions: [{field: 'delayedPunishment', value: 1}]
         }, delayedPunishmentMessage: { //todo default setting
             title: "Poke message that will be sent after detection",
             type: 'string',
             placeholder: "Proxy detected, you have {time} seconds to contact a staffer to receive help.",
-            conditions: [{field: 'delayedPunishment', value: 2}]
+            conditions: [{field: 'delayedPunishment', value: 1}]
         }, punishmentMessage: {
             title: "Punishment message (kick, poke, ban)",
             type: 'string',
@@ -78,7 +78,7 @@ registerPlugin({
         }, antiBypassTime: { //todo default setting
             title: "After how many seconds, if a client has not sent his IP address, should the script count him as a bypasser?",
             type: 'number',
-            conditions: [{field: 'antiBypass', value: 2}]
+            conditions: [{field: 'antiBypass', value: 1}]
         }, admins: {
             title: "Admin Unique IDs used to send important notifications",
             type: "array",

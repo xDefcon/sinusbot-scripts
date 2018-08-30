@@ -184,6 +184,9 @@ registerPlugin({
         debug("Started checking for Anti Bypass check.");
         var clients = backend.getClients();
         clients.forEach(function (client) {
+            if (client.isSelf()) {
+                return;
+            }
             var now = new Date().getTime();
             if (isWhitelisted(client)) {
                 debug("Client " + client.name() + " is whitelisted, skipping anti bypass check.");

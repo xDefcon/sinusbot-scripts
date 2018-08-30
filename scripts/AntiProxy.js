@@ -21,7 +21,7 @@
 
 registerPlugin({
     name: 'AntiProxy - VPN/Proxy Blocker',
-    version: '1.2',
+    version: '2.0',
     description: 'With this script trolls and spammers will become the last problem for your TeamSpeak server, you ban them, they use a VPN or a proxy to reconnect and they can not!',
     author: 'Luigi M. -  xDefcon (luigi@xdefcon.com)',
     vars: {
@@ -191,6 +191,7 @@ registerPlugin({
             }
             if (antiBypassClientConnTimes[client.uid()] == null) {
                 antiBypassClientConnTimes[client.uid()] = now;
+                debug("Registered client time. Client: " + client.name());
                 return;
             }
             if (now - antiBypassClientConnTimes[client.uid()] >= (config.antiBypassTime * 1000) &&
@@ -200,6 +201,8 @@ registerPlugin({
                     " has been detected as a bypasser (The bot was not able to retrieve his IP address in the specified time.");
                 detectedBypassers++;
                 handleDetection(client);
+            } else {
+                debug("Client " + client.name() + " has passed the initial AntiBypass Check. IP: " + client.getIPAddress());
             }
         });
     }, 2000); //todo do the interval configurable?

@@ -118,8 +118,8 @@ registerPlugin({
         }, whitelistGroupType: {
             title: "Group Whitelist type ",
             type: 'select',
-            options: ['normal (if client has at AT LEAST ONE of the listed groups above HE IS NOT checked)',
-                'inverted (if client has AT LEAST ONE of the listed groups above HE IS checked)']
+            options: ['normal (if client has at AT LEAST ONE of the listed groups below HE IS NOT checked)',
+                'inverted (if client has AT LEAST ONE of the listed groups below HE IS checked)']
         }
     }
 }, function (sinusbot, config) {

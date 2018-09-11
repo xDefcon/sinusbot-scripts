@@ -380,25 +380,34 @@ registerPlugin({
         }
 
         var reversed = config.whitelistGroupType == 0 ? false : true;
-        var reversedFlag = false;
+        var hasAGroup = false;
         //check first for group whitelist
-        config.whitelistGroups.forEach(function (val) {
-            if (typeof val.groupId != "undefined") { //todo check double strict equals
-                if (clientGroups.indexOf("" + val.groupId) !== -1) { //if client has A group
+        for (var i = 0; i < config.whitelistGroups.length; i++) {
+            if (typeof config.whitelistGroups[i].groupID != "undefined") { //todo check double strict equals
+                if (clientGroups.indexOf("" + config.whitelistGroups[i].groupID) !== -1) { //if client has A group
                     if (!reversed) {
                         return true;
                     }
+                    hasAGroup = true
                 }
             }
-        });
+        }
+
+        //if client does not have any of listed groups
+        if (reversed) {
+            if (!hasAGroup) {
+                return true;
+            }
+        }
+
         //then for ip address whitelist
-        config.whitelist.forEach(function (val) {
-            if (typeof val.address != "undefined") {  //todo check double strict equals
-                if ("" + ip == val.address) {
+        for (i = 0; i < config.whitelist.length; i++) {
+            if (typeof config.whitelist[i].address != "undefined") {  //todo check double strict equals
+                if ("" + ip == config.whitelist[i].address) {
                     return true;
                 }
             }
-        });
+        }
         return false;
     }
 
@@ -470,7 +479,7 @@ registerPlugin({
 
         if (config.notifyOnDetection == 1) {
             sendMessageToStaff("[b][AntiProxy][/b] Detected Proxy on client: [URL=client://" + client.id() + "/" +
-                client.uniqueID() + "~" + client.name() + "]" + client.name() + "[/URL] (" + client.uniqueID() + ") IP: " + client.getIPAddress() +
+                client.uniqueID() + "]" + client.name() + "[/URL] (" + client.uniqueID() + ") IP: " + client.getIPAddress() +
                 "\n Total client connections: " + client.getTotalConnections() + " - First connection at: " + getDateString(client.getCreationTime()));
         }
         debug("Punishment message: " + config.punishmentMessage);

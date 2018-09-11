@@ -57,12 +57,12 @@ registerPlugin({
             title: "API Key (gives unlimited proxy checks, contact luigi@xdefcon.com to get one)",
             type: 'string',
             placeholder: "Insert the API key here. If you don't have, leave blank."
-        }, antiBypass: { //todo default setting
+        }, antiBypass: {
             title: "Enable Anti Bypass/TS3Hook? (This will detect who is trying to bypass the check with external programs)",
             type: 'select',
             options: ['no', 'yes']
-        }, antiBypassTime: { //todo default setting
-            title: "After how many seconds, if a client has not sent his IP address, should the script count him as a bypasser?",
+        }, antiBypassTime: {
+            title: "After how many seconds, if a client has not sent his IP address, should the script count him as a bypasser? Suggested: >= 20",
             type: 'number',
             conditions: [{field: 'antiBypass', value: 1}]
         }, admins: {
@@ -105,7 +105,7 @@ registerPlugin({
             title: "Group Whitelist type ",
             type: 'select',
             options: ['normal (if client has at AT LEAST ONE of the listed groups below HE IS NOT checked)',
-                'inverted (if client has AT LEAST ONE of the listed groups below HE IS checked)']
+                'inverted (ONLY if client has AT LEAST ONE of the listed groups below HE IS checked, others are not)']
         }
     }
 }, function (sinusbot, config) {
@@ -142,6 +142,13 @@ registerPlugin({
     if (typeof config.whitelistGroupType == 'undefined') {
         config.whitelistGroupType = 0;
     }
+    if (typeof config.antiBypass == 'undefined') {
+        config.antiBypass = 0;
+    }
+    if (typeof config.antiBypassTime == 'undefined') {
+        config.antiBypassTime = 20;
+    }
+
 
 
     var event = require("event");

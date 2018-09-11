@@ -41,20 +41,6 @@ registerPlugin({
             title: "Temp ban duration in seconds",
             type: 'number',
             conditions: [{field: 'punishment', value: 2}]
-        }, delayedPunishment: { //todo default setting
-            title: "Should the above punishent be delayed? (The user have X seconds to contact an admin to explain " +
-            "why he is using a Proxy?",
-            type: 'select',
-            options: ['no', 'yes']
-        }, delayedPunishmentTime: { //todo default setting
-            title: "How many seconds has the detected user to contact a staffer explaining why he is using a proxy?",
-            type: 'number',
-            conditions: [{field: 'delayedPunishment', value: 1}]
-        }, delayedPunishmentMessage: { //todo default setting
-            title: "Poke message that will be sent after detection",
-            type: 'string',
-            placeholder: "Proxy detected, you have {time} seconds to contact a staffer to receive help.",
-            conditions: [{field: 'delayedPunishment', value: 1}]
         }, punishmentMessage: {
             title: "Punishment message (kick, poke, ban)",
             type: 'string',

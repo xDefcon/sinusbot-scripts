@@ -92,7 +92,7 @@ registerPlugin({
                 title: "Client IP address to whitelist",
                 type: "string"
             }]
-        }, whitelistGroups: { //todo add default settings
+        }, whitelistGroups: {
             title: "Group IDs that are automatically whitelisted from detection",
             type: "array",
             vars: [{
@@ -104,8 +104,8 @@ registerPlugin({
         }, whitelistGroupType: {
             title: "Group Whitelist type ",
             type: 'select',
-            options: ['normal (if client has at AT LEAST ONE of the listed groups below HE IS NOT checked)',
-                'inverted (ONLY if client has AT LEAST ONE of the listed groups below HE IS checked, others are not)']
+            options: ['normal (if client has at AT LEAST ONE of the listed group IDs below HE IS NOT checked)',
+                'inverted (ONLY if client has AT LEAST ONE of the listed group IDs below HE IS checked, others are not)']
         }
     }
 }, function (sinusbot, config) {
@@ -138,6 +138,9 @@ registerPlugin({
     }
     if (typeof config.whitelist == 'undefined') {
         config.whitelist = [];
+    }
+    if (typeof config.whitelistGroups == 'undefined') {
+        config.whitelistGroups = [];
     }
     if (typeof config.whitelistGroupType == 'undefined') {
         config.whitelistGroupType = 0;
@@ -271,19 +274,21 @@ registerPlugin({
                 checkAllClients();
                 client.chat("All clients checked.");
                 break;
-            case "!antiproxy whitelist":
-                if (!checkPermissions(client)) {
-                    client.chat(config.permissionsMessage);
-                    return;
+            default:
+                if (message.indexOf("!antiproxy whitelist") !== -1) {
+                    if (!checkPermissions(client)) {
+                        client.chat(config.permissionsMessage);
+                        return;
+                    }
+                    var ip = message.split(" ")[2]; //todo check if message is a String obj and supports split()
+                    if (!isValidIpv4Address(ip)) {
+                        client.chat("The address you entered seems not correct, please check it.");
+                        return;
+                    }
+                    addToIpWhitelist(ip);
+                    client.chat("Succesfully whitelisted the specified IP address for the current instance. Restarting the bot will cause this change to be lost.");
+                    break;
                 }
-                var ip = message.split(" ")[2]; //todo check if message is a String obj and supports split()
-                if (!isValidIpv4Address(ip)) {
-                    client.chat("The address you entered seems not correct, please check it.");
-                    return;
-                }
-                addToIpWhitelist(ip);
-                client.chat("Succesfully whitelisted the specified IP address.");
-                break;
         }
     });
 

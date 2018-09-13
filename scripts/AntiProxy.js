@@ -21,7 +21,7 @@
 
 registerPlugin({
     name: 'AntiProxy - VPN/Proxy Blocker',
-    version: '2.0',
+    version: '2.1',
     description: 'With this script trolls and spammers will become the last problem for your TeamSpeak server, you ban them, they use a VPN or a proxy to reconnect and they can not!',
     author: 'Luigi M. -  xDefcon (luigi@xdefcon.com)',
     vars: {
@@ -63,6 +63,10 @@ registerPlugin({
             options: ['no', 'yes']
         }, antiBypassTime: {
             title: "After how many seconds, if a client has not sent his IP address, should the script count him as a bypasser? Suggested: >= 20",
+            type: 'number',
+            conditions: [{field: 'antiBypass', value: 1}]
+        }, antiBypassInterval: {
+            title: "Every how many seconds should the script run a check for AntiBypass? Suggested: > 2",
             type: 'number',
             conditions: [{field: 'antiBypass', value: 1}]
         }, admins: {
@@ -151,6 +155,9 @@ registerPlugin({
     if (typeof config.antiBypassTime == 'undefined') {
         config.antiBypassTime = 20;
     }
+    if (typeof config.antiBypassInterval == 'undefined') {
+        config.antiBypassInterval = 2;
+    }
 
 
 
@@ -177,6 +184,9 @@ registerPlugin({
     }, 86400000);
 
     setInterval(function () {
+        if (config.antiBypass == 0) {
+            return;
+        }
         debug("Started checking for Anti Bypass check.");
         var clients = backend.getClients();
         clients.forEach(function (client) {
@@ -204,7 +214,7 @@ registerPlugin({
                 debug("Client " + client.name() + " has passed the initial AntiBypass Check. IP: " + client.getIPAddress());
             }
         });
-    }, 2000); //todo do the interval configurable?
+    }, config.antiBypassInterval * 1000); //todo do the interval configurable?
 
     event.on("chat", function (ev) {
         var message = ev.text;
@@ -424,7 +434,7 @@ registerPlugin({
             return false;
         }
         var apiUrl = "https://api.xdefcon.com/proxy/check/?ip=" + ip;
-        if (typeof config.apiKey !== "undefined") {
+        if (typeof config.apiKey != "undefined" && config.apiKey != " ") {
             apiUrl = "https://api.xdefcon.com/proxy/check/?ip=" + ip + "&key=" + config.apiKey;
         }
         var httpOp = {

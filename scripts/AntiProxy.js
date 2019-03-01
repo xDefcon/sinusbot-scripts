@@ -21,9 +21,10 @@
 
 registerPlugin({
     name: 'AntiProxy - VPN/Proxy Blocker',
-    version: '2.1',
+    version: '2.2',
     description: 'With this script trolls and spammers will become the last problem for your TeamSpeak server, you ban them, they use a VPN or a proxy to reconnect and they can not!',
     author: 'Luigi M. -  xDefcon (luigi@xdefcon.com)',
+    requiredModules: ['http'],
     vars: {
         enableSwitch: {
             title: 'Activate the script?',
@@ -62,11 +63,11 @@ registerPlugin({
             type: 'select',
             options: ['no', 'yes']
         }, antiBypassTime: {
-            title: "After how many seconds, if a client has not sent his IP address, should the script count him as a bypasser? Suggested: >= 20",
+            title: "After how many seconds, if a client has not sent his IP address, should the script count him as a bypasser? Suggested: >=20",
             type: 'number',
             conditions: [{field: 'antiBypass', value: 1}]
         }, antiBypassInterval: {
-            title: "Every how many seconds should the script run a check for AntiBypass? Suggested: > 2",
+            title: "Every how many seconds should the script run a check for AntiBypass on all clients? Suggested: >2 (>5 for bigger servers)",
             type: 'number',
             conditions: [{field: 'antiBypass', value: 1}]
         }, admins: {
@@ -164,6 +165,7 @@ registerPlugin({
     var event = require("event");
     var engine = require("engine");
     var backend = require("backend");
+    var http = require("http");
     var localProxies = {};
     var rateLimited = false;
     var antiBypassClientConnTimes = {};
@@ -214,7 +216,7 @@ registerPlugin({
                 debug("Client " + client.name() + " has passed the initial AntiBypass Check. IP: " + client.getIPAddress());
             }
         });
-    }, config.antiBypassInterval * 1000); //todo do the interval configurable?
+    }, config.antiBypassInterval * 1000); //todo make the interval configurable?
 
     event.on("chat", function (ev) {
         var message = ev.text;
@@ -443,7 +445,7 @@ registerPlugin({
             timeout: 4500,
             url: apiUrl
         };
-        sinusbot.http(httpOp, function (error, response) {
+        http.simpleRequest(httpOp, function (error, response) {
             ++apiRequests;
             if (response.statusCode !== 200) { //todo debug if api key not valid
                 engine.log("Could not retrieve info for " + ip + " HTTP_ERROR: " + error);

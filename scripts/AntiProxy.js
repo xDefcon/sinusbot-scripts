@@ -89,7 +89,7 @@ registerPlugin({
                 type: 'number'
             }]
         }, whitelist: {
-            title: "Whitelist of IP addresses (Please report to lugi@xdefcon.com if false detection, this is a quick fix.)",
+            title: "Whitelist of IP addresses (Please report to luigi@xdefcon.com if false detection, this is a quick fix.)",
             type: "array",
             vars: [{
                 name: "address",
@@ -470,7 +470,7 @@ registerPlugin({
                     sendMessageToStaff("[b][AntiProxy][/b] It seems that you have [b]exceeded[/b] the maximum hourly rate of [b]requests to the API[/b]. " +
                         "This means that you will not be able to check [b]new IPs[/b] until the next hour (rate limit reset). If you want to " +
                         "avoid this problem, please consider contacting the developer & provider of the API via email at: " +
-                        "[b][url=mailto:lugi@xdefcon.com?subject=Proxy%20API%20rate%20limit]luigi@xdefcon.com[/url][/b] - " +
+                        "[b][url=mailto:luigi@xdefcon.com?subject=Proxy%20API%20rate%20limit]luigi@xdefcon.com[/url][/b] - " +
                         "The script [b]will continue working with the local cache[/b], no issues about it.");
                 }
                 return false;

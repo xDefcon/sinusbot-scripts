@@ -37,13 +37,13 @@ registerPlugin({
         }, punishment: {
             title: 'Punishment when a proxy is detected',
             type: 'select',
-            options: ['poke', 'kick', 'tempban', 'chatmessage', 'none (notify admins only)']
+            options: ['poke', 'kick', 'tempban', 'chatmessage', 'addgroup' , 'none (notify admins only)']
         }, tempBanDuration: {
             title: "Temp ban duration in seconds",
             type: 'number',
             conditions: [{field: 'punishment', value: 2}]
         }, punishmentMessage: {
-            title: "Punishment message (kick, poke, ban)",
+            title: "Punishment message (kick, poke, ban, addgroup)",
             type: 'string',
             placeholder: "Proxy/VPN detected. Error? Contact: luigi@xdefcon.com or admin"
         }, notifyOnDetection: {
@@ -88,6 +88,10 @@ registerPlugin({
                 title: 'Admin Group ID',
                 type: 'number'
             }]
+        }, vpnGroup: {
+            title: "Group ID used to assign VPN Group",
+            type: "number",
+            conditions: [{field: 'punishment', value: 4}]
         }, whitelist: {
             title: "Whitelist of IP addresses (Please report to luigi@xdefcon.com if false detection, this is a quick fix.)",
             type: "array",
@@ -140,6 +144,9 @@ registerPlugin({
     }
     if (typeof config.admins == 'undefined') {
         config.admins = [];
+    }
+    if (typeof config.vpnGroup == 'undefined') {
+        config.vpnGroup = [];
     }
     if (typeof config.whitelist == 'undefined') {
         config.whitelist = [];
@@ -510,6 +517,11 @@ registerPlugin({
             debug("Sent chat message to Client: " + client.name());
         }
         if (config.punishment == 4) {
+            client.chat(config.punishmentMessage);
+            client.addToServerGroup(config.vpnGroup);
+            debug("Added VPN Group to Client and informed CLient: " + client.name());
+        }
+        if (config.punishment == 5) {
             debug("Notify admins only for Client: " + client.name());
         }
     }

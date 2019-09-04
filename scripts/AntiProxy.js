@@ -260,14 +260,25 @@ registerPlugin({
                     client.chat(config.permissionsMessage);
                     return;
                 }
-                client.chat("\n[b]AntiProxy by xDefcon[/b]\n" +
-                    "[b]Running time[/b]: " + ((Date.now() - startedTime) / 1000).toString() + "secs\n" +
-                    "[b]Proxies detected[/b]: " + detectedProxies + "\n" +
-                    "[b]Bypassers detected[/b]: " + detectedBypassers + "\n" +
-                    "[b]Last detection[/b]: " + lastDetection.client + " " + lastDetection.ip + "\n" +
-                    "[b]Checked IPs[/b]: " + checkedIps + "\n" +
-                    "[b]IP cached locally[/b]: " + Object.keys(localProxies).length + "\n" +
-                    "[b]API requests[/b]: " + apiRequests + "\n");
+                if (lastDetection.client == null && lastDetection.ip == null) {
+                        client.chat("\n[b]AntiProxy by xDefcon[/b]\n" +
+                            "[b]Running time[/b]: " + ((Date.now() - startedTime) / 1000).toString() + "secs\n" +
+                            "[b]Proxies detected[/b]: " + detectedProxies + "\n" +
+                            "[b]Bypassers detected[/b]: " + detectedBypassers + "\n" +
+                            "[b]Last detection[/b]: Never" + "\n" +
+                            "[b]Checked IPs[/b]: " + checkedIps + "\n" +
+                            "[b]IP cached locally[/b]: " + Object.keys(localProxies).length + "\n" +
+                            "[b]API requests[/b]: " + apiRequests + "\n");
+                   } else {
+                        client.chat("\n[b]AntiProxy by xDefcon[/b]\n" +
+                            "[b]Running time[/b]: " + ((Date.now() - startedTime) / 1000).toString() + "secs\n" +
+                            "[b]Proxies detected[/b]: " + detectedProxies + "\n" +
+                            "[b]Bypassers detected[/b]: " + detectedBypassers + "\n" +
+                            "[b]Last detection[/b]: " + lastDetection.client + " " + lastDetection.ip + "\n" +
+                            "[b]Checked IPs[/b]: " + checkedIps + "\n" +
+                            "[b]IP cached locally[/b]: " + Object.keys(localProxies).length + "\n" +
+                            "[b]API requests[/b]: " + apiRequests + "\n");
+                   }
                 break;
             case "!antiproxy purgecache":
                 if (!checkPermissions(client)) {

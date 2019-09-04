@@ -26,11 +26,7 @@ registerPlugin({
     author: 'Luigi M. -  xDefcon (luigi@xdefcon.com)',
     requiredModules: ['http'],
     vars: {
-        enableSwitch: {
-            title: 'Activate the script?',
-            type: 'select',
-            options: ['no', 'yes']
-        }, debugSwitch: {
+        debugSwitch: {
             title: 'Enable debug messages?',
             type: 'select',
             options: ['no', 'yes']
@@ -114,9 +110,6 @@ registerPlugin({
         }
     }
 }, function (sinusbot, config) {
-    if (typeof config.enableSwitch == 'undefined') {
-        config.enableSwitch = 1;
-    }
     if (typeof config.debugSwitch == 'undefined') {
         config.debugSwitch = 0;
     }
@@ -170,7 +163,7 @@ registerPlugin({
     var rateLimited = false;
     var antiBypassClientConnTimes = {};
 
-    var startedTime = config.enableSwitch == 1 ? Date.now() : null;
+    var startedTime = Date.now();
     var checkedIps = 0;
     var detectedProxies = 0;
     var detectedBypassers = 0; //who does not send their IP address.
@@ -226,35 +219,6 @@ registerPlugin({
         }
 
         switch (message) {
-            case "!antiproxy enable":
-                if (!checkPermissions(client)) {
-                    client.chat(config.permissionsMessage);
-                    return;
-                }
-                if (config.enableSwitch == 0) {
-                    config.enableSwitch = 1;
-                    startedTime = Date.now();
-                    rateLimited = false;
-                    client.chat("Successfully enabled AntiProxy script.");
-                    debug("Enabling script by command.");
-                } else {
-                    client.chat("The script is already enabled, type '!antiproxy disable' to disable it.");
-                }
-                break;
-            case "!antiproxy disable":
-                if (!checkPermissions(client)) {
-                    client.chat(config.permissionsMessage);
-                    return;
-                }
-                if (config.enableSwitch == 1) {
-                    config.enableSwitch = 0;
-                    startedTime = null;
-                    client.chat("Successfully disabled AntiProxy script.");
-                    debug("Disabling script by command.");
-                } else {
-                    client.chat("The script is already disabled, type '!antiproxy enable' to enable it.");
-                }
-                break;
             case "!antiproxy info":
                 if (!checkPermissions(client)) {
                     client.chat(config.permissionsMessage);
@@ -305,9 +269,6 @@ registerPlugin({
     });
 
     event.on("clientIPAddress", function (client) {
-        if (config.enableSwitch == 0) {
-            return;
-        }
         if (client.isSelf()) {
             return;
         }

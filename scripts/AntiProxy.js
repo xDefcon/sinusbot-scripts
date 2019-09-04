@@ -21,7 +21,7 @@
 
 registerPlugin({
     name: 'AntiProxy - VPN/Proxy Blocker',
-    version: '2.2',
+    version: '2.3',
     description: 'With this script trolls and spammers will become the last problem for your TeamSpeak server, you ban them, they use a VPN or a proxy to reconnect and they can not!',
     author: 'Luigi M. -  xDefcon (luigi@xdefcon.com)',
     requiredModules: ['http'],
@@ -139,7 +139,7 @@ registerPlugin({
         config.admins = [];
     }
     if (typeof config.vpnGroup == 'undefined') {
-        config.vpnGroup = [];
+        config.vpnGroup = -1;
     }
     if (typeof config.whitelist == 'undefined') {
         config.whitelist = [];
@@ -437,13 +437,14 @@ registerPlugin({
                     return false;
                 }
             } else if (!result.success && result.message.toLowerCase().indexOf("rate limit") !== -1) {
-                engine.log("[ERROR] API requests limit exceeded, please contact luigi@xdefcon.com to remove this limitation.");
+                engine.log("[ERROR] API requests limit exceeded, please check www.xdefcon.com/anti-proxy-api-key or " +
+                    "contact luigi@xdefcon.com or to remove this limitation.");
                 if (!rateLimited) {
                     rateLimited = true;
                     sendMessageToStaff("[b][AntiProxy][/b] It seems that you have [b]exceeded[/b] the maximum hourly rate of [b]requests to the API[/b]. " +
                         "This means that you will not be able to check [b]new IPs[/b] until the next hour (rate limit reset). If you want to " +
-                        "avoid this problem, please consider contacting the developer & provider of the API via email at: " +
-                        "[b][url=mailto:luigi@xdefcon.com?subject=Proxy%20API%20rate%20limit]luigi@xdefcon.com[/url][/b] - " +
+                        "avoid this problem, please read carefully the following page: " +
+                        "[b][url=https://www.xdefcon.com/anti-proxy-api-key]www.xdefcon.com/anti-proxy-api-key[/url][/b] - " +
                         "The script [b]will continue working with the local cache[/b], no issues about it.");
                 }
                 return false;
@@ -483,9 +484,13 @@ registerPlugin({
             debug("Sent chat message to Client: " + client.name());
         }
         if (config.punishment == 4) {
-            client.chat(config.punishmentMessage);
-            client.addToServerGroup(config.vpnGroup);
-            debug("Added VPN Group to Client and informed CLient: " + client.name());
+            if (config.vpnGroup === -1) {
+                debug("The VPN group ID was not set. Please check and set it to the correct value.")
+            } else {
+                client.chat(config.punishmentMessage);
+                client.addToServerGroup(config.vpnGroup);
+                debug("Added VPN Group to Client and informed Client: " + client.name());
+            }
         }
         if (config.punishment == 5) {
             debug("Notify admins only for Client: " + client.name());

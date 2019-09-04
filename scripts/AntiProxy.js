@@ -54,18 +54,6 @@ registerPlugin({
             title: "API Key (gives unlimited proxy checks, contact luigi@xdefcon.com to get one)",
             type: 'string',
             placeholder: "Insert the API key here. If you don't have, leave blank."
-        }, antiBypass: {
-            title: "Enable Anti Bypass/TS3Hook? (This will detect who is trying to bypass the check with external programs)",
-            type: 'select',
-            options: ['no', 'yes']
-        }, antiBypassTime: {
-            title: "After how many seconds, if a client has not sent his IP address, should the script count him as a bypasser? Suggested: >=20",
-            type: 'number',
-            conditions: [{field: 'antiBypass', value: 1}]
-        }, antiBypassInterval: {
-            title: "Every how many seconds should the script run a check for AntiBypass on all clients? Suggested: >2 (>5 for bigger servers)",
-            type: 'number',
-            conditions: [{field: 'antiBypass', value: 1}]
         }, admins: {
             title: "Admin Unique IDs used to send important notifications",
             type: "array",
@@ -150,16 +138,6 @@ registerPlugin({
     if (typeof config.whitelistGroupType == 'undefined') {
         config.whitelistGroupType = 0;
     }
-    if (typeof config.antiBypass == 'undefined') {
-        config.antiBypass = 0;
-    }
-    if (typeof config.antiBypassTime == 'undefined') {
-        config.antiBypassTime = 20;
-    }
-    if (typeof config.antiBypassInterval == 'undefined') {
-        config.antiBypassInterval = 2;
-    }
-
 
 
     var event = require("event");
@@ -168,12 +146,10 @@ registerPlugin({
     var http = require("http");
     var localProxies = {};
     var rateLimited = false;
-    var antiBypassClientConnTimes = {};
 
     var startedTime = Date.now();
     var checkedIps = 0;
     var detectedProxies = 0;
-    var detectedBypassers = 0; //who does not send their IP address.
     var apiRequests = 0;
     var lastDetection = {
         client: null,
@@ -184,39 +160,6 @@ registerPlugin({
         debug("Executing automatic purge of the local IP cache.");
         localProxies = {};
     }, 86400000);
-
-    setInterval(function () {
-        if (config.antiBypass == 0) {
-            return;
-        }
-        debug("Started checking for Anti Bypass check.");
-        var clients = backend.getClients();
-        clients.forEach(function (client) {
-            if (client.isSelf()) {
-                return;
-            }
-            var now = new Date().getTime();
-            if (isWhitelisted(client)) {
-                debug("Client " + client.name() + " is whitelisted, skipping anti bypass check.");
-                return;
-            }
-            if (antiBypassClientConnTimes[client.uid()] == null) {
-                antiBypassClientConnTimes[client.uid()] = now;
-                debug("Registered client time. Client: " + client.name());
-                return;
-            }
-            if (now - antiBypassClientConnTimes[client.uid()] >= (config.antiBypassTime * 1000) &&
-                (client.getIPAddress() == "" || client.getIPAddress() == null)) {
-                debug("[AntiBypass] Applying punishment to client: " + client.name() + " IP not retrievable.");
-                sendMessageToStaff("[b][AntiProxy] Anti Bypass[/b]: The client: " + client.uid() + "(" + client.name() + ")" +
-                    " has been detected as a bypasser (The bot was not able to retrieve his IP address in the specified time.");
-                detectedBypassers++;
-                handleDetection(client);
-            } else {
-                debug("Client " + client.name() + " has passed the initial AntiBypass Check. IP: " + client.getIPAddress());
-            }
-        });
-    }, config.antiBypassInterval * 1000); //todo make the interval configurable?
 
     event.on("chat", function (ev) {
         var message = ev.text;
@@ -239,7 +182,6 @@ registerPlugin({
                 client.chat("\n[b]AntiProxy by xDefcon[/b]\n" +
                     "[b]Running time[/b]: " + ((Date.now() - startedTime) / 1000).toString() + "secs\n" +
                     "[b]Proxies detected[/b]: " + detectedProxies + "\n" +
-                    "[b]Bypassers detected[/b]: " + detectedBypassers + "\n" +
                     "[b]Last detection[/b]: " + lastDetection.client + " " + lastDetection.ip + "\n" +
                     "[b]Checked IPs[/b]: " + checkedIps + "\n" +
                     "[b]IP cached locally[/b]: " + Object.keys(localProxies).length + "\n" +

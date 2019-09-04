@@ -231,6 +231,11 @@ registerPlugin({
                     client.chat(config.permissionsMessage);
                     return;
                 }
+
+                //avoiding to print "null null" on the "Last detection" line
+                lastDetection.client = lastDetection.client == null ? "Never" : lastDetection.client;
+                lastDetection.ip = lastDetection.ip == null ? "" : lastDetection.ip;
+
                 client.chat("\n[b]AntiProxy by xDefcon[/b]\n" +
                     "[b]Running time[/b]: " + ((Date.now() - startedTime) / 1000).toString() + "secs\n" +
                     "[b]Proxies detected[/b]: " + detectedProxies + "\n" +

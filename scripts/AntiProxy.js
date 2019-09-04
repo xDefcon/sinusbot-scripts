@@ -21,7 +21,7 @@
 
 registerPlugin({
     name: 'AntiProxy - VPN/Proxy Blocker',
-    version: '2.2',
+    version: '2.3',
     description: 'With this script trolls and spammers will become the last problem for your TeamSpeak server, you ban them, they use a VPN or a proxy to reconnect and they can not!',
     author: 'Luigi M. -  xDefcon (luigi@xdefcon.com)',
     requiredModules: ['http'],
@@ -146,7 +146,7 @@ registerPlugin({
         config.admins = [];
     }
     if (typeof config.vpnGroup == 'undefined') {
-        config.vpnGroup = [];
+        config.vpnGroup = 0;
     }
     if (typeof config.whitelist == 'undefined') {
         config.whitelist = [];
@@ -532,7 +532,6 @@ registerPlugin({
             engine.log("[DEBUG] " + msg);
         }
     }
-
 
     function getDateString(timestamp) {
         var a = new Date(timestamp);

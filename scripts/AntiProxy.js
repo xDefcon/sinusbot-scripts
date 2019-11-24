@@ -21,7 +21,7 @@
 
 registerPlugin({
     name: 'AntiProxy - VPN/Proxy Blocker',
-    version: '2.4',
+    version: '2.5',
     description: 'With this script trolls and spammers will become the last problem for your TeamSpeak server, you ban them, they use a VPN or a proxy to reconnect and they can not!',
     author: 'Luigi M. -  xDefcon (luigi@xdefcon.com)',
     requiredModules: ['http'],
@@ -285,6 +285,9 @@ registerPlugin({
 
     function checkForProxy(client) {
         var ip = client.getIPAddress();
+        if (ip != null) {
+            ip = ip.replace("[", "").replace("]", "")
+        }
         var res = checkProxyViaAPI(ip, client);
         if (res === true) {
             debug("[PROXY DETECTED] Client: " + client.name() + " (" + client.uniqueID() + ") IP: " + ip);

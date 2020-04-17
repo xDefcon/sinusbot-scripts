@@ -361,7 +361,7 @@ registerPlugin({
         var httpOp = {
             method: "GET",
             headers: "Content-type: application/json",
-            timeout: 20000,
+            timeout: 30000,
             url: apiUrl
         };
         http.simpleRequest(httpOp, function (error, response) {
